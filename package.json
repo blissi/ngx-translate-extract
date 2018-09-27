@@ -71,6 +71,6 @@
     "path": "0.12.7",
     "mkdirp": "0.5.1",
     "flat": "2.0.1",
-    "typescript": "2.4.1"
+    "typescript": "2.9.2"
   }
 }
