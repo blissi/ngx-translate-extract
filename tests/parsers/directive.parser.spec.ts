@@ -39,6 +39,17 @@ describe('DirectiveParser', () => {
 		expect(keys).to.deep.equal(['KEY']);
 	});
 
+	it('should not throw an unmatched selector when there is a pipe in a component', () => {
+		const contents = `
+			@Component({
+				template: '{{ value | lhDate:format }}'
+			})
+			export class TestComponent { }
+		`;
+		const keys = parser.extract(contents, componentFilename).keys();
+		expect(keys).to.deep.equal([]);
+	});
+
 	it('should extract direct text nodes when no translate attribute value is provided', () => {
 		const contents = `
 			<div translate>

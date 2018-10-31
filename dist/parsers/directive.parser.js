@@ -29,25 +29,34 @@ var DirectiveParser = (function (_super) {
         var collection = new translation_collection_1.TranslationCollection();
         template = this._normalizeTemplateAttributes(template);
         var selector = '[translate], [ng2-translate]';
-        $(cheerio.load(template, { xmlMode: true }))
-            .find(selector)
-            .addBack(selector)
-            .each(function (i, element) {
-            var $element = $(element);
-            var attr = $element.attr('translate') || $element.attr('ng2-translate');
-            if (attr) {
-                collection = collection.add(attr);
+        try {
+            $(template)
+                .find(selector)
+                .addBack(selector)
+                .each(function (i, element) {
+                var $element = $(element);
+                var attr = $element.attr('translate') || $element.attr('ng2-translate');
+                if (attr) {
+                    collection = collection.add(attr);
+                }
+                else {
+                    $element
+                        .contents()
+                        .toArray()
+                        .filter(function (node) { return node.type === 'text'; })
+                        .map(function (node) { return node.nodeValue.trim(); })
+                        .filter(function (text) { return text.length > 0; })
+                        .forEach(function (text) { return collection = collection.add(text); });
+                }
+            });
+        }
+        catch (err) {
+            if (err instanceof SyntaxError && err.message.startsWith('Unmatched selector')) {
+                console.error(err);
+                return collection;
             }
-            else {
-                $element
-                    .contents()
-                    .toArray()
-                    .filter(function (node) { return node.type === 'text'; })
-                    .map(function (node) { return node.nodeValue.trim(); })
-                    .filter(function (text) { return text.length > 0; })
-                    .forEach(function (text) { return collection = collection.add(text); });
-            }
-        });
+            throw err;
+        }
         return collection;
     };
     DirectiveParser.prototype._normalizeTemplateAttributes = function (template) {

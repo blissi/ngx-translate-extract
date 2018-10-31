@@ -22,25 +22,34 @@ export class DirectiveParser extends AbstractTemplateParser implements ParserInt
 		template = this._normalizeTemplateAttributes(template);
 
 		const selector = '[translate], [ng2-translate]';
-		$(cheerio.load(template, {xmlMode: true}))
-			.find(selector)
-			.addBack(selector)
-			.each((i: number, element: CheerioElement) => {
-				const $element = $(element);
-				const attr = $element.attr('translate') || $element.attr('ng2-translate');
+		try {
+			$(template)
+				.find(selector)
+				.addBack(selector)
+				.each((i: number, element: CheerioElement) => {
+					const $element = $(element);
+					const attr = $element.attr('translate') || $element.attr('ng2-translate');
 
-				if (attr) {
-					collection = collection.add(attr);
-				} else {
-					$element
-						.contents()
-						.toArray()
-						.filter(node => node.type === 'text')
-						.map(node => node.nodeValue.trim())
-						.filter(text => text.length > 0)
-						.forEach(text => collection = collection.add(text));
-				}
-			});
+					if (attr) {
+						collection = collection.add(attr);
+					} else {
+						$element
+							.contents()
+							.toArray()
+							.filter(node => node.type === 'text')
+							.map(node => node.nodeValue.trim())
+							.filter(text => text.length > 0)
+							.forEach(text => collection = collection.add(text));
+					}
+				});
+		}
+		catch (err) {
+			if (err instanceof SyntaxError && err.message.startsWith('Unmatched selector'))  {
+				console.error(err);
+				return collection;
+			}
+			throw err;
+		}
 
 		return collection;
 	}
